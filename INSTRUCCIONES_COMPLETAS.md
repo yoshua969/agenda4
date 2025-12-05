@@ -84,13 +84,13 @@ NODE_ENV=development
 ### 3. Iniciar el servidor
 
 \`\`\`bash
-npm start
+npm install bcryptjs
 \`\`\`
 
 Para desarrollo con reinicio automático:
 
 \`\`\`bash
-npm run dev
+node server.js
 \`\`\`
 
 ### 4. Acceder a la aplicación

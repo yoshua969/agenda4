@@ -33,7 +33,7 @@ cd bookingmap-chile
 ### 2. Instalar dependencias
 
 \`\`\`bash
-npm install
+npm install bcryptjs
 \`\`\`
 
 Esto instalará:
@@ -57,7 +57,7 @@ NODE_ENV=development
 ### 4. Iniciar el servidor
 
 \`\`\`bash
-npm start
+node server.js
 \`\`\`
 
 O para modo desarrollo con auto-reinicio:

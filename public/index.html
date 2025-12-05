@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookingMap Chile - Plataforma de Reservas</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>BookingMap Chile</span>
+            </div>
+            <nav class="nav">
+                <button id="loginBtn" class="btn btn-outline">Iniciar Sesión</button>
+                <button id="adminBtn" class="btn btn-secondary">Administrador</button>
+                <button id="registerBtn" class="btn btn-primary">Registrarse</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="search-section">
+            <div class="container">
+                <h1>Encuentra y reserva servicios cerca de ti</h1>
+                <div class="search-bar">
+                    <div class="search-input-group">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="¿Qué servicio buscas?">
+                    </div>
+                    <button id="locationBtn" class="btn btn-location">
+                        <i class="fas fa-crosshairs"></i>
+                        Mi ubicación
+                    </button>
+                </div>
+
+                <div class="categories">
+                    <button class="category-btn active" data-category="all">
+                        <i class="fas fa-th"></i>
+                        Todos
+                    </button>
+                    <button class="category-btn" data-category="beauty">
+                        <i class="fas fa-cut"></i>
+                        Belleza
+                    </button>
+                    <button class="category-btn" data-category="health">
+                        <i class="fas fa-heartbeat"></i>
+                        Salud
+                    </button>
+                    <button class="category-btn" data-category="automotive">
+                        <i class="fas fa-car"></i>
+                        Automotriz
+                    </button>
+                    <button class="category-btn" data-category="shopping">
+                        <i class="fas fa-shopping-cart"></i>
+                        Compras
+                    </button>
+                    <button class="category-btn" data-category="food">
+                        <i class="fas fa-utensils"></i>
+                        Comida
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="map-section">
+            <div class="container">
+                <div class="content-grid">
+                    <div class="map-container">
+                        <div id="map"></div>
+                        <div class="map-controls">
+                            <button id="centerMapBtn" class="btn btn-secondary">
+                                <i class="fas fa-crosshairs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="results-container">
+                        <div class="results-header">
+                            <h3>Resultados cerca de ti</h3>
+                            <span id="resultsCount">0 lugares encontrados</span>
+                        </div>
+                        <div id="resultsList" class="results-list">
+                            <div class="no-results">Cargando negocios...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Iniciar Sesión</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="loginForm" class="form">
+                <div class="form-group">
+                    <label for="loginEmail">Correo electrónico</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Iniciar Sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Registrarse</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="registerForm" class="form">
+                <div class="form-group">
+                    <label for="registerName">Nombre completo</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Correo electrónico</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPhone">Teléfono</label>
+                    <input type="tel" id="registerPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Contraseña</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Registrarse</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Hacer una Reserva</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="bookingContent"></div>
+        </div>
+    </div>
+
+    <!-- Reviews Modal -->
+    <div id="reviewsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reseñas</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="reviewsContent"></div>
+        </div>
+    </div>
+
+    <!-- Leave Review Modal -->
+    <div id="leaveReviewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Dejar una Reseña</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="leaveReviewContent"></div>
+        </div>
+    </div>
+
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Fixed script loading order: Leaflet first, then app.js -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

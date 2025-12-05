@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - BookingMap Chile</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .dashboard-section {
+            padding: 2rem 0;
+        }
+        .dashboard-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .dashboard-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .dashboard-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .large-modal {
+            max-width: 800px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .schedule-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .schedule-day {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        .day-header {
+            flex: 0 0 120px;
+        }
+        .day-times {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .time-input {
+            padding: 0.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .info-box {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .info-box i {
+            color: #3b82f6;
+            font-size: 1.5rem;
+        }
+        .stat-card {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .stat-card h4 {
+            font-size: 2rem;
+            color: #2563eb;
+            margin-bottom: 0.25rem;
+        }
+        .stat-card p {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .business-item {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .business-item h4 {
+            margin-bottom: 0.5rem;
+        }
+        .business-item-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>BookingMap Chile - Admin</span>
+            </div>
+            <nav class="nav">
+                <span id="adminName" class="user-name"></span>
+                <button id="backToMapBtn" class="btn btn-outline">Volver al Mapa</button>
+                <button id="logoutBtn" class="btn btn-secondary">Cerrar Sesión</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="dashboard-section">
+            <div class="container">
+                <div class="dashboard-header">
+                    <h2><i class="fas fa-cog"></i> Panel de Administración</h2>
+                </div>
+                <div class="admin-controls">
+                    <button id="addBusinessBtn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Agregar Negocio
+                    </button>
+                    <button id="manageBusinessBtn" class="btn btn-secondary">
+                        <i class="fas fa-cog"></i> Gestionar Negocios
+                    </button>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-chart-bar"></i> Estadísticas</h3>
+                        <div id="adminStats"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-calendar-alt"></i> Reservas Recientes</h3>
+                        <div id="recentBookings"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Business Modal -->
+    <div id="addBusinessModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2>Agregar Nuevo Negocio</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="addBusinessForm" class="form">
+                <div class="form-group">
+                    <label for="businessType">Tipo de Negocio</label>
+                    <select id="businessType" required>
+                        <option value="">Seleccionar tipo</option>
+                        <option value="pyme">PYME (con horarios y reservas)</option>
+                        <option value="empresa">Empresa (solo información)</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="businessName">Nombre del Negocio</label>
+                        <input type="text" id="businessName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="businessCategory">Categoría</label>
+                        <select id="businessCategory" required>
+                            <option value="">Seleccionar categoría</option>
+                            <option value="beauty">Belleza</option>
+                            <option value="automotive">Automotriz</option>
+                            <option value="health">Salud</option>
+                            <option value="shopping">Compras</option>
+                            <option value="food">Comida</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="businessPhone">Teléfono</label>
+                        <input type="tel" id="businessPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="businessAddress">Dirección</label>
+                        <input type="text" id="businessAddress" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Ubicación en el Mapa</label>
+                    <div id="addBusinessMap" style="height: 300px; border-radius: 8px; margin-bottom: 1rem;"></div>
+                    <input type="hidden" id="businessLat">
+                    <input type="hidden" id="businessLng">
+                </div>
+
+                <!-- Schedules for PYMEs -->
+                <div id="pymeScheduleSection" style="display: none;">
+                    <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; color: #1e3a8a;">
+                        <i class="fas fa-calendar-alt"></i> Horarios de Atención
+                    </h3>
+                    <div class="schedule-container" id="scheduleContainer"></div>
+
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label for="bookingInterval">Intervalo entre citas (minutos)</label>
+                        <select id="bookingInterval">
+                            <option value="15">15 minutos</option>
+                            <option value="30" selected>30 minutos</option>
+                            <option value="45">45 minutos</option>
+                            <option value="60">1 hora</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="businessServices">Servicios (separados por coma)</label>
+                        <textarea id="businessServices" rows="3" placeholder="Ej: Corte de cabello, Barba, Peinado"></textarea>
+                    </div>
+                </div>
+
+                <!-- Section for empresas -->
+                <div id="empresaSection" style="display: none;">
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Las empresas solo mostrarán su ubicación en el mapa, sin opción de reservas.</p>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">Agregar Negocio</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Business Modal -->
+    <div id="manageBusinessModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2>Gestionar Negocios</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div id="businessManagementList" class="form"></div>
+        </div>
+    </div>
+
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>
